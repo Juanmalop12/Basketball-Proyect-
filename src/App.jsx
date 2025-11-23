@@ -1,3 +1,4 @@
+
 // src/App.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { players as initialPlayers } from './data/players.js';
@@ -222,3 +223,4 @@ export default function App() {
     </div>
   );
 }
+
