@@ -8,3 +8,4 @@ export function ThemeToggle({ darkMode, onToggle }) {
     </button>
   );
 }
+//boton de modo oscuro/claro
