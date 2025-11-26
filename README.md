@@ -1,16 +1,80 @@
-# React + Vite
+# 🏀 Central de Rendimiento – Basketball  
+Examen Final – Programación IV
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es una aplicación web construida con **React + Vite + TailwindCSS**, que permite visualizar, buscar, ordenar, filtrar y analizar rendimiento estadístico de jugadores de basketball.  
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 👥 Integrantes
+- **Tomas Rodríguez**  
+- **Juan Manuel López**
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🤖 Asistencia Tecnológica
+En la elaboración del proyecto se utilizó apoyo de **ChatGPT (OpenAI, modelo GPT-5.1)** estrictamente para:
+- Explicación de errores,
+- Mejoras de organización del código,
+- Generación de documentación,
+- Ajustes de estilo CSS y estructura de carpetas.  
 
-## Expanding the ESLint configuration
+Todo el código final fue desarrollado, probado e integrado manualmente por los integrantes del grupo.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## 📝 Descripción del Proyecto
+La **Central de Rendimiento Basketball** permite:
+
+- Buscar jugadores
+- Ordenar por: número, nombre, PTS, REB, AST, EFF, equipo, posición
+- Colorear filas pares o impares
+- Paginación completa
+- Estadísticas automáticas:
+  - Total jugadores mostrados  
+  - Promedio de puntos  
+  - Promedio de rebotes  
+  - Máximo anotador  
+  - Distribución por posición  
+- Sistema de favoritos persistente
+- Modal con detalles completos del jugador
+- Historial de búsquedas (persistente)
+- Modo claro/oscuro 
+---
+
+# ⚙️ Instalación y Ejecución
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/TU-USUARIO/TU-REPO.git
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Ejecutar en desarrollo
+npm run dev
+
+# 4. Construir para producción
+npm run build
+
+🗂️ Estructura del Proyecto
+src/
+│── components/
+│   ├── Header.jsx
+│   ├── Modal.jsx
+│   ├── Pagination.jsx
+│   ├── PlayerTable.jsx
+│   ├── SearchBar.jsx
+│   ├── SearchHistory.jsx
+│   ├── StatsPanel.jsx
+│   ├── ThemeToggle.jsx
+│
+│── data/
+│   └── players.js
+│
+│── App.jsx
+│── main.jsx
+│── styles.css
+│
+public/
+index.html
+README.md
+APRENDIZAJE.md
