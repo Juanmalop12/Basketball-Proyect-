@@ -1,5 +1,4 @@
-// src/data/players.js
-// Ejemplo de datos para Basketball
+// 2o jugadores
 export const players = [
   {
     id: 1,
