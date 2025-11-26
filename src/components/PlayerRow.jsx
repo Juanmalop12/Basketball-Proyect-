@@ -1,43 +1,48 @@
-// src/components/PlayerRow.jsx
-import React from 'react';
+import React from "react";
 
-
-export default function PlayerRow({
+export function PlayerRow({
   player,
   index,
   onClick,
-  isFavorite,
   onToggleFavorite,
-  darkMode,
-  colorClass
+  isFavorite,
+  colorClass,
 }) {
-  const rowClass = [
-    'table__row',
-    darkMode ? 'table__row--dark' : 'table__row--light',
-    colorClass || ''
-  ]
-    .filter(Boolean)
-    .join(' ');
-
   return (
-    <tr className={rowClass} onClick={() => onClick(player)} role="button">
-      <td
-        className="table__cell table__cell--fav"
-        onClick={e => {
-          e.stopPropagation();
-          onToggleFavorite(player.id);
-        }}
-      >
-        <span className="fav-icon">{isFavorite ? '★' : '☆'}</span>
+    <tr
+      className={`
+        ${colorClass}
+        hover:bg-slate-100
+        transition-colors
+        cursor-pointer
+      `}
+      onClick={(e) => {
+        // Si hizo click en la estrella, NO abrir modal
+        if (e.target.dataset.star) return;
+        onClick(player);
+      }}
+    >
+      {/* Favorito */}
+      <td className="px-4 py-3 text-center">
+        <button
+          data-star="true"
+          onClick={() => onToggleFavorite(player.id)}
+          className="text-xl text-yellow-500"
+        >
+          {isFavorite ? "★" : "☆"}
+        </button>
       </td>
-      <td className="table__cell">{String(player.number).padStart(2, '0')}</td>
-      <td className="table__cell">{player.name}</td>
-      <td className="table__cell">{player.position}</td>
-      <td className="table__cell">{player.age}</td>
-      <td className="table__cell">{player.points}</td>
-      <td className="table__cell">{player.rebounds}</td>
-      <td className="table__cell">{player.assists}</td>
-      <td className="table__cell">{player.efficiency}</td>
+
+      <td className="px-4 py-3 font-semibold">{player.number}</td>
+      <td className="px-4 py-3 font-semibold text-gray-900">{player.name}</td>
+      <td className="px-4 py-3">{player.team}</td>
+      <td className="px-4 py-3">{player.position}</td>
+
+      <td className="px-4 py-3 text-center font-semibold">{player.points}</td>
+      <td className="px-4 py-3 text-center font-semibold">{player.rebounds}</td>
+      <td className="px-4 py-3 text-center font-semibold">{player.assists}</td>
+      <td className="px-4 py-3 text-center font-semibold">{player.efficiency}</td>
     </tr>
   );
 }
+

@@ -1,226 +1,326 @@
+import { useState, useEffect, useMemo } from "react";
+import { players } from "./data/players";
 
-// src/App.jsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { players as initialPlayers } from './data/players.js';
-import SearchBar from './components/SearchBar.jsx';
-import PlayerTable from './components/PlayerTable.jsx';
-import Pagination from './components/Pagination.jsx';
-import StatsPanel from './components/StatsPanel.jsx';
-import Modal from './components/Modal.jsx';
-import ThemeToggle from './components/ThemeToggle.jsx';
-import SearchHistory from './components/SearchHistory.jsx';
+// Componentes
+import { Modal } from "./components/Modal";
+import { Pagination } from "./components/Pagination";
+import { PlayerTable } from "./components/PlayerTable";
+import { SearchBar } from "./components/SearchBar";
+import { SearchHistory } from "./components/SearchHistory";
+import { StatsPanel } from "./components/StatsPanel";
+import { ThemeToggle } from "./components/ThemeToggle";
+import { Header } from "./components/Header";
 
 export default function App() {
-  // ---------- Estado y lógica (igual que antes) ----------
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+  // BUSQUEDA
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const [rowColors, setRowColors] = useState('none');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'none' });
-
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved ? JSON.parse(saved) : false; // default false: light (video style)
+  // HISTORIAL
+  const [searchHistory, setSearchHistory] = useState(() => {
+    const saved = localStorage.getItem("searchHistory");
+    return saved ? JSON.parse(saved) : [];
   });
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    document.documentElement.classList.toggle('dark', darkMode);
-  }, [darkMode]);
 
+  // FAVORITOS
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem("favorites");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+
+  // MODO OSCURO — SOLO FONDO
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("darkMode");
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // MODAL
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem('favorites');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  // PAGINACIÓN
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  const [searchHistory, setSearchHistory] = useState(() => {
-    const saved = localStorage.getItem('searchHistory');
-    return saved ? JSON.parse(saved) : [];
+  // ORDENAMIENTO
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "none",
   });
 
+  // COLORES FILAS
+  const [rowColors, setRowColors] = useState("none");
+
+  // -----------------------------
+  // DEBOUNCE DE BUSQUEDA
+  // -----------------------------
   useEffect(() => {
-    if (debouncedSearch && debouncedSearch.length > 2) {
-      setSearchHistory(prev => {
-        const updated = [debouncedSearch, ...prev.filter(s => s !== debouncedSearch)];
-        const sliced = updated.slice(0, 5);
-        localStorage.setItem('searchHistory', JSON.stringify(sliced));
-        return sliced;
-      });
-    }
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // -----------------------------
+  // HISTORIAL
+  // -----------------------------
+  useEffect(() => {
+    if (!debouncedSearch || debouncedSearch.length < 2) return;
+
+    setSearchHistory((prev) => {
+      const updated = [
+        debouncedSearch,
+        ...prev.filter((h) => h !== debouncedSearch),
+      ].slice(0, 5);
+
+      localStorage.setItem("searchHistory", JSON.stringify(updated));
+      return updated;
+    });
   }, [debouncedSearch]);
 
+  // -----------------------------
+  // FILTRO DE BÚSQUEDA
+  // -----------------------------
   const filteredPlayers = useMemo(() => {
-    let data = [...initialPlayers];
-    if (debouncedSearch) {
-      const term = debouncedSearch.toLowerCase();
-      data = data.filter(p => p.name.toLowerCase().includes(term));
-    }
-    if (showOnlyFavorites) {
-      data = data.filter(p => favorites.includes(p.id));
-    }
-    if (sortConfig.key && sortConfig.direction !== 'none') {
-      const key = sortConfig.key;
-      data.sort((a, b) => {
-        let va = a[key]; let vb = b[key];
-        if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
-        if (va < vb) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (va > vb) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-    return data;
-  }, [debouncedSearch, showOnlyFavorites, favorites, sortConfig]);
+    if (!debouncedSearch) return players;
 
-  useEffect(() => setCurrentPage(1), [debouncedSearch, showOnlyFavorites, itemsPerPage]);
+    return players.filter((p) =>
+      p.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+  }, [debouncedSearch]);
 
-  const totalItems = filteredPlayers.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedPlayers = filteredPlayers.slice(startIndex, startIndex + itemsPerPage);
+  // -----------------------------
+  // FAVORITOS
+  // -----------------------------
+  const favoriteFilteredPlayers = useMemo(() => {
+    if (!showOnlyFavorites) return filteredPlayers;
+    return filteredPlayers.filter((p) => favorites.includes(p.id));
+  }, [filteredPlayers, favorites, showOnlyFavorites]);
 
+  // -----------------------------
+  // ORDENAMIENTO
+  // -----------------------------
+  const sortedPlayers = useMemo(() => {
+    if (sortConfig.direction === "none" || !sortConfig.key)
+      return favoriteFilteredPlayers;
+
+    return [...favoriteFilteredPlayers].sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key])
+        return sortConfig.direction === "asc" ? -1 : 1;
+      if (a[sortConfig.key] > b[sortConfig.key])
+        return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [favoriteFilteredPlayers, sortConfig]);
+
+  // ESTADISTICAS
   const stats = useMemo(() => {
-    if (filteredPlayers.length === 0) return { total: 0, avgPoints: 0, avgRebounds: 0, topScorer: null, positions: [] };
-    const total = filteredPlayers.length;
-    const avgPoints = filteredPlayers.reduce((s, p) => s + p.points, 0) / total;
-    const avgRebounds = filteredPlayers.reduce((s, p) => s + p.rebounds, 0) / total;
-    const topScorer = filteredPlayers.reduce((m, p) => (p.points > m.points ? p : m), filteredPlayers[0]);
-    const map = {};
-    filteredPlayers.forEach(p => (map[p.position] = (map[p.position] || 0) + 1));
-    const positions = Object.entries(map).map(([name, count]) => ({ name, count, percent: Math.round((count / total) * 100) }));
-    return { total, avgPoints, avgRebounds, topScorer, positions };
-  }, [filteredPlayers]);
+    const list = sortedPlayers;
 
-  // ---------- handlers ----------
-  const handleSort = key => {
-    setSortConfig(prev => {
-      if (prev.key !== key) return { key, direction: 'asc' };
-      if (prev.direction === 'asc') return { key, direction: 'desc' };
-      if (prev.direction === 'desc') return { key: null, direction: 'none' };
-      return { key, direction: 'asc' };
+    if (list.length === 0) {
+      return {
+        total: 0,
+        avgPoints: 0,
+        avgRebounds: 0,
+        topScorer: null,
+        posDistribution: {},
+      };
+    }
+
+    const total = list.length;
+    const avgPoints = (list.reduce((a, b) => a + b.points, 0) / total).toFixed(1);
+    const avgRebounds = (list.reduce((a, b) => a + b.rebounds, 0) / total).toFixed(1);
+
+    const topScorer = list.reduce((max, p) =>
+      p.points > max.points ? p : max
+    );
+
+    const posDistribution = list.reduce((acc, p) => {
+      acc[p.position] = (acc[p.position] || 0) + 1;
+      return acc;
+    }, {});
+
+    return { total, avgPoints, avgRebounds, topScorer, posDistribution };
+  }, [sortedPlayers]);
+
+  // FAVORITOS
+  const toggleFavorite = (id) => {
+    setFavorites((prev) => {
+      const updated = prev.includes(id)
+        ? prev.filter((f) => f !== id)
+        : [...prev, id];
+
+      localStorage.setItem("favorites", JSON.stringify(updated));
+      return updated;
     });
   };
-  const handleRowClick = player => { setSelectedPlayer(player); setIsModalOpen(true); };
-  const handleToggleFavorite = id => setFavorites(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
-  const handleClearHistory = () => { setSearchHistory([]); localStorage.removeItem('searchHistory'); };
-  const handleSelectHistory = term => setSearchTerm(term);
 
-  // ---------- render ----------
+  // -----------------------------
+  // ORDENAR COLUMNAS
+  // -----------------------------
+  const onSort = (column) => {
+    setSortConfig((prev) => {
+      if (prev.key !== column) {
+        return { key: column, direction: "asc" };
+      }
+      if (prev.direction === "asc") {
+        return { key: column, direction: "desc" };
+      }
+      return { key: null, direction: "none" };
+    });
+  };
+
+  // -----------------------------
+  // PAGINACIÓN
+  // -----------------------------
+  const totalItems = sortedPlayers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+
+  const paginatedPlayers = sortedPlayers.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  // -----------------------------
+  // MODAL
+  // -----------------------------
+  const openModal = (player) => {
+    setSelectedPlayer(player);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedPlayer(null);
+    setIsModalOpen(false);
+  };
+
+  // -----------------------------
+  // LIMPIAR HISTORIAL
+  // -----------------------------
+  const clearHistory = () => {
+    setSearchHistory([]);
+    localStorage.removeItem("searchHistory");
+  };
+
+  // -----------------------------
+  // MODO OSCURO SOLO FONDO (BODY)
+  // -----------------------------
+ 
+useEffect(() => {
+  localStorage.setItem("darkMode", JSON.stringify(darkMode));
+
+  if (darkMode) {
+    document.documentElement.classList.add("dark");
+    document.documentElement.classList.remove("light");
+  } else {
+    document.documentElement.classList.add("light");
+    document.documentElement.classList.remove("dark");
+  }
+}, [darkMode]);
+
+  // -----------------------------
+  // RENDER
+  // -----------------------------
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#2b1360] to-[#07101b] text-gray-900 antialiased">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* Scoreboard */}
-        <header className="mb-8">
-          <div className="rounded-3xl bg-white shadow-xl p-6 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="text-sm text-gray-500">TCB</div>
-              <div className="text-xs text-gray-400 uppercase">Top Club Flames</div>
-            </div>
+    <div className="min-h-screen w-full">
 
-            <div className="text-center">
-              <div className="text-5xl font-extrabold text-gray-800">98 <span className="text-[#2cc6f0]">—</span> 92</div>
-              <div className="text-xs text-gray-500 mt-1">Q4 · 01:12 · Arena Central — 18 Nov</div>
-            </div>
-
-            <div className="text-right">
-              <div className="text-sm text-gray-500">RIV</div>
-              <div className="text-xs text-gray-400 uppercase">Rival All-Stars</div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main layout: search + stats + table */}
-        <main className="grid grid-cols-12 gap-8">
-          {/* Left column: search, actions, table */}
-          <section className="col-span-8">
-            {/* Search Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-              <div className="flex gap-6 items-center">
-                <div className="flex-1">
-                  <SearchBar value={searchTerm} onChange={setSearchTerm} onClear={() => setSearchTerm('')} resultsCount={filteredPlayers.length} />
-                </div>
-                <div className="flex gap-3 items-center">
-                  <button className="px-4 py-2 rounded-lg bg-white border border-gray-200 shadow hover:shadow-md" onClick={() => setRowColors('pares')}>Filas pares</button>
-                  <button className="px-4 py-2 rounded-lg bg-white border border-gray-200 shadow hover:shadow-md" onClick={() => setRowColors('impares')}>Filas impares</button>
-                  <button className="px-4 py-2 rounded-lg bg-white border border-gray-200 shadow hover:shadow-md" onClick={() => setRowColors('none')}>Limpiar</button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mt-6">
-                <div className="flex items-center gap-4">
-                  <label className="inline-flex items-center gap-2 text-sm text-gray-600">
-                    <input type="checkbox" className="form-checkbox" checked={showOnlyFavorites} onChange={e => setShowOnlyFavorites(e.target.checked)} />
-                    Mostrar solo favoritos ({favorites.length})
-                  </label>
-                </div>
-                <div>
-                  <SearchHistory history={searchHistory} onSelectSearch={handleSelectHistory} onClearHistory={handleClearHistory} />
-                </div>
-              </div>
-            </div>
-
-            {/* Table Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-4">
-              <PlayerTable
-                players={paginatedPlayers}
-                onRowClick={handleRowClick}
-                onSort={handleSort}
-                sortConfig={sortConfig}
-                darkMode={darkMode}
-                rowColors={rowColors}
-                favorites={favorites}
-                onToggleFavorite={handleToggleFavorite}
-              />
-
-              <div className="mt-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                  itemsPerPage={itemsPerPage}
-                  onItemsPerPageChange={setItemsPerPage}
-                  totalItems={totalItems}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Right column: stats */}
-          <aside className="col-span-4 space-y-6">
-            <StatsPanel stats={stats} darkMode={darkMode} />
-            <div className="bg-white rounded-2xl shadow-lg p-4">
-              <h3 className="text-sm text-gray-600 mb-3">Líderes</h3>
-              <div className="text-sm text-gray-800">
-                <div className="mb-2"><strong>Anotador:</strong> {stats.topScorer ? `${stats.topScorer.name} · ${stats.topScorer.points} pts` : '-'}</div>
-                <div className="mb-2"><strong>Rebotes (avg):</strong> {stats.avgRebounds.toFixed(1)}</div>
-                <div className="mb-2"><strong>Eficiencia (top):</strong> {stats.topScorer ? `${stats.topScorer.efficiency}` : '-'}</div>
-              </div>
-            </div>
-          </aside>
-        </main>
-
-        <footer className="mt-8 text-sm text-gray-500 flex justify-between">
-          <div>Proyecto: Central de Rendimiento — Basketball</div>
-          <div>Integrantes: Tomás Rodríguez, Juan Manuel López</div>
-        </footer>
+      {/* BOTÓN MODO OSCURO ARRIBA DERECHA */}
+      <div className="absolute top-10 right-10 z-50">
+        <ThemeToggle 
+          darkMode={darkMode}
+          onToggle={() => setDarkMode(!darkMode)}
+        />
       </div>
 
-      {/* Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} player={selectedPlayer} darkMode={darkMode} />
+      {/* CONTENIDO */}
+      <div className="max-w-6xl mx-auto pt-10 pb-16 px-6 relative">
+
+        <Header />
+
+        <div className="mt-10 bg-slate-950/70 border border-white/5 rounded-3xl px-8 py-6 shadow-[0_26px_60px_rgba(0,0,0,0.9)]">
+
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onClear={() => setSearchTerm("")}
+            resultsCount={filteredPlayers.length}
+          />
+
+          <SearchHistory
+            history={searchHistory}
+            onSelectSearch={setSearchTerm}
+            onClearHistory={clearHistory}
+          />
+
+          <StatsPanel stats={stats} />
+
+          <div className="mt-6">
+            <button
+              onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+              className="px-5 py-2 rounded-full bg-amber-400 text-slate-900 font-semibold text-sm shadow-md hover:bg-amber-300"
+            >
+              {showOnlyFavorites
+                ? "Mostrar todos los jugadores"
+                : "Mostrar solo favoritos ⭐"}
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-3 mt-4">
+            <button
+              className="px-4 py-2 rounded-full bg-blue-600/80 hover:bg-blue-500 text-sm font-semibold"
+              onClick={() => setRowColors("pares")}
+            >
+              Pintar Pares
+            </button>
+
+            <button
+              className="px-4 py-2 rounded-full bg-amber-500/90 hover:bg-amber-400 text-sm font-semibold"
+              onClick={() => setRowColors("impares")}
+            >
+              Pintar Impares
+            </button>
+
+            <button
+              className="px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 text-sm font-semibold"
+              onClick={() => setRowColors("none")}
+            >
+              Limpiar Colores
+            </button>
+          </div>
+
+          <PlayerTable
+            players={paginatedPlayers}
+            onRowClick={openModal}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+            sortConfig={sortConfig}
+            onSort={onSort}
+            rowColors={rowColors}
+          />
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+
+        </div>
+      </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        player={selectedPlayer}
+      />
+
     </div>
   );
 }
-

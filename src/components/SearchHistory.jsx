@@ -1,18 +1,29 @@
-// src/components/SearchHistory.jsx
-import React from 'react';
+import React from "react";
 
-export default function SearchHistory({ history, onSelectSearch, onClearHistory }) {
+export function SearchHistory({ history, onSelectSearch, onClearHistory }) {
   if (!history || history.length === 0) return null;
 
   return (
-    <div className="history">
-      <div className="history__header">
-        <span className="history__title">Historial</span>
-        <button className="history__clear" onClick={onClearHistory}>Limpiar</button>
+    <div className="mt-6">
+
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm text-gray-300">Historial de búsqueda</h3>
+
+        <button
+          onClick={onClearHistory}
+          className="text-xs text-red-300 hover:text-red-200"
+        >
+          Limpiar historial
+        </button>
       </div>
-      <div className="history__chips">
-        {history.map(item => (
-          <button key={item} className="history__chip" onClick={() => onSelectSearch(item)}>
+
+      <div className="flex flex-wrap gap-2">
+        {history.map((item) => (
+          <button
+            key={item}
+            onClick={() => onSelectSearch(item)}
+            className="search-chip"
+          >
             {item}
           </button>
         ))}
