@@ -1,125 +1,187 @@
-Central de Rendimiento – Basketball
+Aquí tienes una **versión más estética, completa, clara y profesional**, ideal para tu entrega del proyecto **Central de Rendimiento – Basketball**.
+Conserva todos los conceptos clave, pero con mejor orden, explicación y presentación.
 
-Qué es useState y cuándo usarlo?
+---
 
-useState es un hook de React que permite crear estados internos dentro de un componente funcional.
-Cada estado contiene dos partes:
+# 🏀 **Central de Rendimiento – Basketball**
 
+## **Resumen de Hooks, Persistencia y Optimización en React**
+
+---
+
+## 🔵 **1. ¿Qué es `useState` y cuándo usarlo?**
+
+`useState` es un **hook de React** que permite crear y manejar un **estado interno** dentro de un componente funcional.
+
+```js
 const [valor, setValor] = useState(valorInicial);
+```
 
-valor = dato almacenado
+### 📌 ¿Para qué sirve?
 
-setValor = función para actualizarlo
+* Guardar datos que cambian con el tiempo.
+* Forzar que el componente se vuelva a renderizar cuando el estado cambia.
 
-React vuelve a renderizar el componente cuando el estado cambia.
+### 📌 ¿Cuándo usarlo?
 
-Cuándo usarlo?
+Siempre que necesites manejar información dinámica, como:
 
-Para almacenar datos que cambian con el tiempo.
+* Inputs de formularios
+* Modal abierto/cerrado
+* Modo oscuro
+* Listas filtradas
+* Datos temporales del usuario
+* Favoritos, puntuaciones, estadísticas
 
-Para manejar inputs, modales, favoritos, colores, filtros, paginación, etc.
+### 🏀 Ejemplos reales del proyecto:
 
- Ejemplos reales del proyecto
-1️ Estado del término de búsqueda
-const [searchTerm, setSearchTerm] = useState("");
+1. **Estado del término de búsqueda**
 
-2️ Estado del modo oscuro
-const [darkMode, setDarkMode] = useState(false);
+   ```js
+   const [searchTerm, setSearchTerm] = useState("");
+   ```
 
-3️ Estado de los jugadores favoritos
-const [favorites, setFavorites] = useState([]);
+2. **Modo oscuro / claro**
 
- ¿Qué es useEffect y sus casos de uso?
+   ```js
+   const [darkMode, setDarkMode] = useState(false);
+   ```
 
-useEffect ejecuta efectos secundarios, es decir, acciones fuera del flujo normal del render:
+3. **Jugadores favoritos**
 
-Timers (setTimeout, setInterval)
+   ```js
+   const [favorites, setFavorites] = useState([]);
+   ```
 
-Llamados a API
+---
 
-Guardado en localStorage
+## 🔵 **2. ¿Qué es `useEffect` y qué casos de uso tiene?**
 
-Suscripción a eventos
+`useEffect` permite ejecutar **efectos secundarios** (acciones fuera del render).
 
-Validaciones
+### 🛠️ Casos de uso principales:
 
- Tipos de useEffect
- useEffect(() => {}, [])
+* Llamados a APIs
+* Timers (`setTimeout`, `setInterval`)
+* Guardar o leer del `localStorage`
+* Suscribirse a eventos (scroll, resize…)
+* Validaciones automáticas
+* Control de modo oscuro basado en el sistema
 
-Ejecuta cuando dep cambia.
+### 🧩 Tipos de `useEffect`
 
- useEffect(() => {})
+| Sintaxis                              | Cuándo se ejecuta               |
+| ------------------------------------- | ------------------------------- |
+| `useEffect(() => {})`                 | En **cada render**              |
+| `useEffect(() => {}, [])`             | Solo **una vez** al montar      |
+| `useEffect(() => {}, [dependencias])` | Cuando cambian las dependencias |
 
+---
 
-Qué es useMemo y cuándo usarlo?
+## 🔵 **3. ¿Qué es `useMemo` y cuándo usarlo?**
 
-useMemo memoriza resultados de cálculos pesados, evitando recalcularlos en cada render.
+`useMemo` memoriza el **resultado de un cálculo costoso**, evitando recalcularlo en cada render.
 
-Se usa para optimizar rendimiento cuando:
+```js
+const resultado = useMemo(() => calcularAlgo(), [dependencias]);
+```
 
-Tienes cálculos costosos
+### 🎯 ¿Cuándo usarlo?
 
-Tienes listas grandes
+* Cálculos complejos o pesados
+* Filtros de listas grandes
+* Ordenamientos
+* Procesar estadísticas de jugadores
+* Evitar renders innecesarios
 
-Tienes filtros u ordenamientos complejos
+### ⚔️ Diferencia con `useCallback`:
 
-Diferencia con useCallback
+* `useMemo` → memoriza **valores**
+* `useCallback` → memoriza **funciones**
 
-useMemo guarda valores
+---
 
-useCallback guarda funciones
+## 🔵 **4. ¿Cómo funciona el Cleanup en `useEffect`?**
 
-¿Cómo funciona el cleanup dentro de useEffect?
+El **cleanup** limpia efectos anteriores para evitar:
 
-El cleanup es esencial cuando:
+✔️ Fugas de memoria
+✔️ Eventos duplicados
+✔️ Timers acumulados
 
-Usas timeouts o intervalos
+```js
+useEffect(() => {
+  const id = setInterval(() => {
+    console.log("Actualizando...");
+  }, 1000);
 
-Añades eventos (scroll, resize, click)
+  return () => clearInterval(id);
+}, []);
+```
 
-Creas suscripciones
+### 📌 ¿Cuándo es obligatorio usar cleanup?
 
-Evitas memoria acumulada
+* Timers (`setInterval`, `setTimeout`)
+* Eventos del navegador (scroll, resize)
+* WebSockets o suscripciones
+* Observers
 
-El cleanup previene fugas de memoria y comportamientos duplicados.
+---
 
+## 🔵 **5. ¿Cómo funciona `localStorage` con React?**
 
-¿Cómo funciona localStorage con React?
+`localStorage` permite guardar datos que **persisten incluso si cierras la pestaña o el navegador**.
 
+### 📝 Características:
 
-localStorage guarda datos de manera persistente en el navegador.
-Incluso después de recargar la página o cerrar el navegador, la información sigue ahí.
+* Solo almacena **strings**
+* Por eso usamos `JSON.stringify` y `JSON.parse`
 
-Formatos permitidos: solo strings (por eso usamos JSON).
+### 🏀 Ejemplos del proyecto:
 
+**Guardar favoritos**
 
-Guardar favoritos
+```js
 localStorage.setItem("favorites", JSON.stringify(updated));
+```
 
-Guardar historial de búsqueda
+**Guardar historial de búsqueda**
+
+```js
 localStorage.setItem("searchHistory", JSON.stringify(updated));
+```
 
+### ⭐ Beneficios:
 
-✔️ Persistencia real
-✔️ Experiencia mejorada
-✔️ Cumple requisito del examen
+* Persistencia real
+* Experiencia más fluida
+* Cumple con los requisitos del examen
 
-🧠 Conclusiones
+---
 
-Comprendimos cómo los hooks permiten crear lógica compleja en componentes pequeños.
+## 🧠 **Conclusiones del Proyecto**
 
-Aprendimos a optimizar cálculos con useMemo.
+* Los **hooks** permiten crear interfaces dinámicas, limpias y reactivas.
+* `useState` manejó la interacción del usuario: búsqueda, favoritos, modo oscuro.
+* `useEffect` nos permitió usar APIs, timers, eventos y persistencia.
+* `useMemo` optimizó cálculos y listas para mejorar el rendimiento.
+* Se aplicó correctamente el sistema de **cleanup** para evitar fugas de memoria.
+* `localStorage` garantizó que la app conserve datos incluso si se cierra.
+* En conjunto, se desarrolló una aplicación que aprovecha completamente las herramientas modernas de React.
 
-Implementamos persistencia con localStorage.
+---
 
-Aplicamos cleanup functions para evitar fugas de memoria y comportamientos duplicados.
+## 🤖 **IA Utilizada**
 
-Utilizamos useEffect correctamente con dependencias ([], [variable]).
+Documento redactado con apoyo de: **ChatGPT – OpenAI (Modelo GPT-5.1)**
+El código, integración y diseño fueron realizados manualmente por los integrantes del equipo.
 
-El proyecto desarrollado aplica TODOS los conceptos vistos en clase.
+---
 
-🤖 IA Utilizada
+Si quieres, también puedo:
+✅ Convertirlo en PDF
+✅ Hacerlo estilo diapositivas
+✅ Ponerlo en formato de presentación de proyecto
+✅ Añadir imágenes y diagramas estéticos
 
-Documento redactado con apoyo de:
-ChatGPT – OpenAI (Modelo GPT-5.1)
-El código y la integración fueron realizados manualmente por los integrantes del equipo.
+¿Deseas un formato diferente?
